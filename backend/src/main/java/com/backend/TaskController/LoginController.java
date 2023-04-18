@@ -6,7 +6,7 @@ import com.backend.TaskRepo.EmployeeRepo;
 import com.backend.TaskAuthentication.JwtAuthenticationResponse;
 import com.backend.TaskAuthentication.MessageResponse;
 import com.backend.TaskSecurity.JwtTokenProvider;
-import com.backend.TaskService.LoginService;
+//import com.backend.TaskService.LoginService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,7 +43,7 @@ public class LoginController {
 	private final JwtTokenProvider jwtTokenProvider;
 
 	@PostMapping("/signin")
-	public ResponseEntity<JwtAuthenticationResponse> signin(@Valid @RequestBody SigninRequest signinRequest) {
+	public ResponseEntity<JwtAuthenticationResponse> signin(@Valid @RequestBody SigninRequest signinRequest){
 
 		Authentication auth = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(signinRequest.getUsername(), signinRequest.getPassword()));
@@ -52,7 +52,9 @@ public class LoginController {
 		String jwt = jwtTokenProvider.generateJwtToken(userPrincipal);
 
 		Employee emp = employeeRepo.find(signinRequest.getUsername());
-
+//		emp.getName();
+//		emp.getEmail();
+//		emp.getPhoneNo();
 		return ResponseEntity.ok(new JwtAuthenticationResponse(jwt, emp));
 
 	}
@@ -92,5 +94,16 @@ public class LoginController {
 		return ResponseEntity.ok(new MessageResponse("Đăng ký thành công"));
 
 	}
+	
+	 @PostMapping("/signout")
+	 public ResponseEntity<?> logoutUser() {
+//		 UserPrincipal userPrincipal = (UserPrincipal) auth.getPrincipal();
+//		 SecurityContextHolder.getContext().setAuthentication(auth);
+		
+		UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	    Long userId = userPrincipal.getId();
+//	    refreshTokenService.deleteByUserId(userId);
+	    return ResponseEntity.ok(new MessageResponse("Log out successful!"));
+	  }
 
 }

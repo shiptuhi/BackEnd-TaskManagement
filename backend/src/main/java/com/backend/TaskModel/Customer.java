@@ -1,11 +1,19 @@
 package com.backend.TaskModel;
 
+import java.util.List;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 
@@ -37,7 +45,7 @@ public class Customer {
 	private Gender gender;
 	
 	public enum Gender {
-		Female, Male, Undefined;
+		Female, Male, Other;
 	}
 
 	@Column(name = "GHI_CHU", nullable = true)
@@ -49,4 +57,12 @@ public class Customer {
 	public enum Status {
 		Inactive, Active;
 	}
+
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "customer")
+	@JsonBackReference
+	private Set<Project> project;
+	
+//	@OneToMany(mappedBy = "customer_workdo")
+//	@JsonBackReference
+//	private Set<WorkDo> workdo;
 }
