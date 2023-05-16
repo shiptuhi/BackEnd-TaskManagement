@@ -1,8 +1,8 @@
 package com.backend.TaskModel;
 
 import java.util.Date;
-import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,17 +11,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
 import lombok.Data;
 
 @Entity
@@ -30,7 +23,6 @@ import lombok.Data;
 public class WorkDo {
 
 	@Id
-	@JsonIgnore
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "ID", nullable = false)
 	private Long id;
@@ -41,68 +33,56 @@ public class WorkDo {
 	@Column(name = "TEN_CONG_VIEC", nullable = false)
 	private String name;
 
-	@ManyToOne()
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "DAU_MUC_ID", nullable = false)
 	@JsonIgnore
 	@JsonManagedReference
 	private WorkItem workItem;
 
-	@ManyToOne()
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "MODULE_ID", nullable = false)
 	@JsonIgnore
 	@JsonManagedReference
 	private Module module_workdo;
 
-	@ManyToOne()
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "DU_AN_ID", nullable = false)
 	@JsonIgnore
 	@JsonManagedReference
 	private Project project_workdo;
 
-	@ManyToOne()
-	@JoinColumn(name = "LOAI_CONG_VIEC", nullable = false)
-	@JsonIgnore
-	@JsonManagedReference
+	@Column(name = "LOAI_CONG_VIEC", nullable = false)
 	private TypesofWork type;
+	
+	public enum TypesofWork{
+		Complex, Medium, Simple;
+	}
 
-	@ManyToOne()
-	@JoinColumn(name = "MUC_UU_TIEN", nullable = false)
-	@JsonIgnore
-	@JsonManagedReference
+	@Column(name = "MUC_UU_TIEN", nullable = false)
 	private WorkPriority priority;
+	
+	public enum WorkPriority {
+		Emergency, High, Medium, Low;
+	}
 
-	@ManyToOne()
-	@JoinColumn(name = "NHOM_CONG_VIEC", nullable = false)
-	@JsonIgnore
-	@JsonManagedReference
+	@Column(name = "NHOM_CONG_VIEC", nullable = false)
 	private GroupofWork group;
 	
-//	@ManyToOne()
-//	@JoinColumn(name = "NGUOI_THUC_HIEN", nullable = false)
-//	@JsonIgnore
-//	@JsonManagedReference
-//	private Employee emp1;
-//	
-//	@ManyToOne()
-//	@JoinColumn(name = "NGUOI_QUAN_LY", nullable = false)
-//	@JsonIgnore
-//	@JsonManagedReference
-//	private Employee emp2;
-
-
-//	@ManyToOne()
-//	@JoinColumn(name = "KHACH_HANG_ID", nullable = false)
-//	@JsonIgnore
-//	@JsonManagedReference
-//	private Customer customer_workdo;
-
-	@JsonFormat(pattern = "dd/MM/yyyy")
-	@Column(name = "DU_KIEN_BAT_DAU", nullable = true)
-	private Date expDateStart;
-
-	@JsonFormat(pattern = "dd/MM/yyyy")
-	@Column(name = "DU_KIEN_KET_THUC", nullable = true)
-	private Date expDateEnd;
+	public enum GroupofWork{
+		New, Fix;
+	}
+	
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "NGUOI_THUC_HIEN", nullable = false)
+	@JsonIgnore
+	@JsonManagedReference
+	private Employee emp_workdo_3;
+	
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "NGUOI_QUAN_LY", nullable = false)
+	@JsonIgnore
+	@JsonManagedReference
+	private Employee emp_workdo_4;
 
 	@JsonFormat(pattern = "dd/MM/yyyy")
 	@Column(name = "NGAY_BAT_DAU", nullable = true)
@@ -115,11 +95,12 @@ public class WorkDo {
 	@Column(name = "NOI_DUNG", nullable = true)
 	private String content;
 
-	@ManyToOne()
-	@JoinColumn(name = "TRANG_THAI", nullable = false)
-	@JsonIgnore
-	@JsonManagedReference
-	private WorkStatus status_workdo;
+	@Column(name = "TRANG_THAI", nullable = false)
+	private WorkStatus status;
+	
+	public enum WorkStatus {
+		Finish, Processing, Pending, Pause, Cancel;
+	}
 
 	@Column(name = "GHI_CHU", nullable = true)
 	private String note;

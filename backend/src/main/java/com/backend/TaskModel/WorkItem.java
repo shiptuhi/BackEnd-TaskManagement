@@ -13,8 +13,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -50,11 +48,12 @@ public class WorkItem {
 	@JsonManagedReference
 	private Project project_workitem;
 
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "MUC_UU_TIEN", nullable = false)
-	@JsonIgnore
-	@JsonManagedReference
+	@Column(name = "MUC_UU_TIEN", nullable = false)
 	private WorkPriority priority;
+	
+	public enum WorkPriority {
+		Emergency, High, Medium, Low;
+	}
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "NGUOI_THUC_HIEN", nullable = false)
@@ -68,25 +67,26 @@ public class WorkItem {
 	@JsonManagedReference
 	private Employee emp_workitem_2;
 
-	@JsonFormat(pattern = "dd/MM/yyyy")
+	@JsonFormat(pattern = "dd-MM-yyyy")
 	@Column(name = "NGAY_BAT_DAU", nullable = true)
 	private Date dateStart;
 
-	@JsonFormat(pattern = "dd/MM/yyyy")
+	@JsonFormat(pattern = "dd-MM-yyyy")
 	@Column(name = "NGAY_KET_THUC", nullable = true)
 	private Date dateEnd;
 
 	@Column(name = "NOI_DUNG", nullable = true)
 	private String content;
 
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "TRANG_THAI", nullable = false)
-	@JsonIgnore
-	@JsonManagedReference
-	private WorkStatus status_workitem;
+	@Column(name = "TRANG_THAI", nullable = false)
+	private WorkStatus status;
 	
-//	@OneToMany(mappedBy = "workItem")
-//	@JsonBackReference
-//	private Set<WorkDo> workdo;
+	public enum WorkStatus {
+		Finish, Processing, Pending, Pause, Cancel;
+	}
+	
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "workItem",orphanRemoval=true)
+	@JsonBackReference
+	private Set<WorkDo> workdo;
 
 }

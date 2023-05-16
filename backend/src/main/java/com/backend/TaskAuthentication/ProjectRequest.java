@@ -13,12 +13,12 @@ public class ProjectRequest {
 	private String code;
 	private String name;
 	private Status status;
-	@JsonFormat(pattern = "dd/MM/yyyy")
+	@JsonFormat(pattern = "dd-MM-yyyy")
 	private Date dateStart;
-	@JsonFormat(pattern = "dd/MM/yyyy")
+	@JsonFormat(pattern = "dd-MM-yyyy")
 	private Date dateEnd;
-	private long empid;
-	private long customerid;
+	private String emp;
+	private String customer;
 	private String note;
 
 }

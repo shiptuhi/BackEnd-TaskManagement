@@ -1,5 +1,7 @@
 package com.backend.TaskController;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,21 +15,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.TaskModel.WorkItem;
 import com.backend.TaskModel.Module;
 import com.backend.TaskModel.Project;
 import com.backend.TaskModel.Employee;
-import com.backend.TaskModel.WorkPriority;
-import com.backend.TaskModel.WorkStatus;
+
 
 import com.backend.TaskRepo.WorkItemRepo;
-import com.backend.TaskRepo.WorkPriorityRepo;
 import com.backend.TaskRepo.ModuleRepo;
 import com.backend.TaskRepo.ProjectRepo;
 import com.backend.TaskRepo.EmployeeRepo;
-import com.backend.TaskRepo.WorkStatusRepo;
 
 import com.backend.TaskAuthentication.WorkItemRequest;
 
@@ -43,8 +43,7 @@ public class WorkItemController {
 	private final ModuleRepo moduleRepo;
 	private final ProjectRepo projectRepo;
 	private final EmployeeRepo employeeRepo;
-	private final WorkPriorityRepo workPriorityRepo;
-	private final WorkStatusRepo workStatusRepo;
+
 	
 	@GetMapping("/list")
 	public ResponseEntity<List<WorkItem>> getWorkItems() {
@@ -52,71 +51,88 @@ public class WorkItemController {
 		return new ResponseEntity<>(workItemRepo.findWorkItems(), HttpStatus.OK);
 	}
 	
+	@GetMapping("/list/name/")
+	public ResponseEntity<List<String>> getWorkItems_Name(@RequestParam(value = "module", required = false) String module) {
+
+		return new ResponseEntity<>(workItemRepo.findWorkItem_Name(module), HttpStatus.OK);
+	}
+	
 	@PostMapping("/form")
-	public ResponseEntity<WorkItem> createWorkItem(@RequestBody WorkItemRequest newWorkItem){
+	public ResponseEntity<?> createWorkItem(@RequestBody WorkItemRequest newWorkItem){
+		if(workItemRepo.existsByCode(newWorkItem.getCode())) {
+			return new ResponseEntity<>("Error: Code is already taken!",HttpStatus.BAD_REQUEST); 
+		}
 		WorkItem wk = new WorkItem();
-		wk.setCode(newWorkItem.getCode());
+		String prefix = "IT_";
+		LocalDate time = LocalDate.now();
+		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+		String date = time.format(dateTimeFormatter);
+		long code = workItemRepo.generatedCode();
+		String generateCode = prefix + date + "_" + code;
+		
+		wk.setCode(generateCode);
 		wk.setName(newWorkItem.getName());
 		
-		Module mod = moduleRepo.findModuleById(newWorkItem.getModuleid());
+		Module mod = moduleRepo.findModule(newWorkItem.getModule());
 		wk.setModule_workitem(mod);
 		
-		Project prj = projectRepo.findProjectById(newWorkItem.getProjectid());
+		Project prj = projectRepo.findProject(newWorkItem.getProject());
 		wk.setProject_workitem(prj);
 		
-		WorkPriority pri = workPriorityRepo.getPriority(newWorkItem.getPriorityid());
-		wk.setPriority(pri);
+
+		wk.setPriority(newWorkItem.getPriority());
 		
-		Employee emp1 = employeeRepo.findEId(newWorkItem.getEmp1id());
+		Employee emp1 = employeeRepo.findE(newWorkItem.getEmp1());
 		wk.setEmp_workitem_1(emp1);
 		
-		Employee emp2 = employeeRepo.findEId(newWorkItem.getEmp2id());
+		Employee emp2 = employeeRepo.findE(newWorkItem.getEmp2());
 		wk.setEmp_workitem_2(emp2);
 		
 		wk.setDateStart(newWorkItem.getDateStart());
 		wk.setDateEnd(newWorkItem.getDateEnd());
 		wk.setContent(newWorkItem.getContent());
 		
-		WorkStatus sta = workStatusRepo.getStatus(newWorkItem.getStatus());
-		wk.setStatus_workitem(sta);
+		wk.setStatus(newWorkItem.getStatus());
 		
 		
-		return new ResponseEntity<>(workItemRepo.save(wk), HttpStatus.CREATED);
+		return new ResponseEntity<>(workItemRepo.save(wk), HttpStatus.OK);
 	}
 	
 	@PutMapping("/form/{id}")
-	public ResponseEntity<WorkItem> updateWorkItem(@PathVariable("id") long id, @RequestBody WorkItemRequest upWorkItem){
+	public ResponseEntity<?> updateWorkItem(@PathVariable("id") long id, @RequestBody WorkItemRequest upWorkItem){
+
 		WorkItem wk = workItemRepo.findWorkItemById(id);
-		wk.setCode(upWorkItem.getCode());
+		if (!wk.getCode().equals(upWorkItem.getCode()) && workItemRepo.existsByCode(upWorkItem.getCode())) {
+			return new ResponseEntity<>("Error: Code is already taken!",HttpStatus.BAD_REQUEST); 
+		}
+//		wk.setCode(upWorkItem.getCode());
 		wk.setName(upWorkItem.getName());
 		
-		Module mod = moduleRepo.findModuleById(upWorkItem.getModuleid());
+		Module mod = moduleRepo.findModule(upWorkItem.getModule());
 		wk.setModule_workitem(mod);
 		
-		Project prj = projectRepo.findProjectById(upWorkItem.getProjectid());
+		Project prj = projectRepo.findProject(upWorkItem.getProject());
 		wk.setProject_workitem(prj);
 		
-		WorkPriority pri = workPriorityRepo.getPriority(upWorkItem.getPriorityid());
-		wk.setPriority(pri);
+		wk.setPriority(upWorkItem.getPriority());
 		
-		Employee emp1 = employeeRepo.findEId(upWorkItem.getEmp1id());
+		Employee emp1 = employeeRepo.findE(upWorkItem.getEmp1());
 		wk.setEmp_workitem_1(emp1);
 		
-		Employee emp2 = employeeRepo.findEId(upWorkItem.getEmp2id());
+		Employee emp2 = employeeRepo.findE(upWorkItem.getEmp2());
 		wk.setEmp_workitem_2(emp2);
 		
 		wk.setDateStart(upWorkItem.getDateStart());
 		wk.setDateEnd(upWorkItem.getDateEnd());
 		wk.setContent(upWorkItem.getContent());
 		
-		WorkStatus sta = workStatusRepo.getStatus(upWorkItem.getStatus());
-		wk.setStatus_workitem(sta);
+		wk.setStatus(upWorkItem.getStatus());
 		
 		
-		return new ResponseEntity<>(workItemRepo.save(wk), HttpStatus.CREATED);
+		return new ResponseEntity<>(workItemRepo.save(wk), HttpStatus.OK);
 	}
 	@GetMapping("/search/{id}")
-	public ResponseEntity<WorkItem> searchWorkitem(@PathVariable("id") long id) {
+	public ResponseEntity<WorkItem> getWorkitem(@PathVariable("id") long id) {
 		
 		Optional<WorkItem> searchData = workItemRepo.findById(id);
 		if (searchData.isPresent()) {
@@ -126,11 +142,34 @@ public class WorkItemController {
 		}
 	}
 	
+	@GetMapping("/")
+	public ResponseEntity<List<WorkItem>> searchWorkitem(@RequestParam(value = "code", required = false) String code, 
+													@RequestParam(value = "name", required = false) String name,
+													@RequestParam(value = "module_workitem", required = false) String module_workitem,
+													@RequestParam(value = "project_workitem", required = false) String project_workitem,
+													@RequestParam(value = "priority", required = false) String priority,
+													@RequestParam(value = "emp_workitem_1", required = false) String emp_workitem_1
+//													@RequestParam(value = "emp_workitem_2", required = false) String emp_workitem_2,
+//													@RequestParam(value = "dateStart", required = false) String dateStart,
+//													@RequestParam(value = "dateEnd", required = false) String dateEnd, 
+//													@RequestParam(value = "content", required = false) String content, 
+//													@RequestParam(value = "status", required = false) String status
+													) 
+	{
+		
+		List<WorkItem> wi = workItemRepo.searchWorkItems(code, name, module_workitem, 
+												project_workitem, priority, emp_workitem_1);
+//												emp_workitem_2, dateStart,
+//												dateEnd, content, status
+		
+		return new ResponseEntity<>(wi, HttpStatus.OK);
+	}
+	
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<?> deleteWorkitem(@PathVariable(name = "id") Long id) { 
+	public ResponseEntity<?> deleteWorkitem(@PathVariable(name = "id") long id) { 
 		workItemRepo.deleteById(id);
 		
-		return new ResponseEntity< >("Successfully", HttpStatus.OK);
+		return new ResponseEntity<>("Successfully", HttpStatus.OK);
 	}
 
 }

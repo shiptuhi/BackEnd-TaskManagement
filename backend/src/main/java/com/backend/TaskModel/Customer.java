@@ -1,6 +1,5 @@
 package com.backend.TaskModel;
 
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -13,7 +12,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 
@@ -58,11 +56,7 @@ public class Customer {
 		Inactive, Active;
 	}
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "customer")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "customer", orphanRemoval=true)
 	@JsonBackReference
 	private Set<Project> project;
-	
-//	@OneToMany(mappedBy = "customer_workdo")
-//	@JsonBackReference
-//	private Set<WorkDo> workdo;
 }

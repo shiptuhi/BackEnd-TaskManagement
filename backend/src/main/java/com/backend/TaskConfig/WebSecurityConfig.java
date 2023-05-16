@@ -63,9 +63,32 @@ public class WebSecurityConfig {
 				.exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 				.authorizeRequests()
-					.antMatchers("/api/auth/**").permitAll()
-//					.antMatchers("/api/employee/**").permitAll()
-//					.antMatchers("/api/customer/**").permitAll()
+					.antMatchers("/api/auth/signin").permitAll()
+					.antMatchers("/api/auth/signup").hasAnyAuthority("Admin")
+					.antMatchers("/api/employee/**").permitAll()
+					
+					.antMatchers("/api/customer/list/").hasAnyAuthority("Admin", "Team Leader", "Tester", "FrontEnd", "BackEnd")
+					.antMatchers("/api/customer/form").hasAnyAuthority("Admin", "Team Leader")	
+					.antMatchers("/api/customer/form/**").hasAnyAuthority("Admin", "Team Leader")
+
+					
+					.antMatchers("/api/project/list/").hasAnyAuthority("Admin", "Team Leader", "Tester", "FrontEnd", "BackEnd")
+					.antMatchers("/api/project/form").hasAnyAuthority("Admin", "Team Leader")
+					.antMatchers("/api/project/form/**").hasAnyAuthority("Admin", "Team Leader")
+					
+					.antMatchers("/api/module/list/").hasAnyAuthority("Admin", "Team Leader", "Tester", "FrontEnd", "BackEnd")
+					.antMatchers("/api/module/form").hasAnyAuthority("Admin", "Team Leader")
+					.antMatchers("/api/module/form/**").hasAnyAuthority("Admin", "Team Leader")
+					
+					.antMatchers("/api/work-item/list/").hasAnyAuthority("Admin", "Team Leader", "Tester", "FrontEnd", "BackEnd")
+					.antMatchers("/api/work-item/form").hasAnyAuthority("Admin", "Team Leader")
+					.antMatchers("/api/work-item/form/**").hasAnyAuthority("Admin", "Team Leader")
+					
+					.antMatchers("/api/work-do/list/").hasAnyAuthority("Admin", "Team Leader", "Tester", "FrontEnd", "BackEnd")
+					.antMatchers("/api/work-do/form").hasAnyAuthority("Admin", "Team Leader", "Tester", "FrontEnd", "BackEnd")
+					.antMatchers("/api/work-do/form/**").hasAnyAuthority("Admin", "Team Leader", "Tester", "FrontEnd", "BackEnd")
+					.antMatchers("/api/work-do/delete/**").hasAnyAuthority("Admin", "Team Leader", "Tester", "FrontEnd", "BackEnd")
+
 				.anyRequest().authenticated();
 
 		http.authenticationProvider(authenticationProvider());

@@ -3,7 +3,7 @@ package com.backend.TaskController;
 import com.backend.TaskModel.Customer;
 import com.backend.TaskRepo.CustomerRepo;
 import com.backend.TaskAuthentication.CustomerRequest;
-import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -32,18 +32,31 @@ public class CustomerController {
 
 	@GetMapping("/list")
 	public ResponseEntity<List<Customer>> getCustomers() {
-		return new ResponseEntity<>(customerRepo.findAll(), HttpStatus.OK);
+		return new ResponseEntity<>(customerRepo.findCustomers(), HttpStatus.OK);
 	}
-	
-	
-	
+
 	@GetMapping("/list/partner")
 	public ResponseEntity<List<String>> getCustomers_Partners() {
 		return new ResponseEntity<>(customerRepo.findCustomers_partners(), HttpStatus.OK);
 	}
+	
+	@GetMapping("/list/name")
+	public ResponseEntity<List<String>> getCustomers_Name() {
+		return new ResponseEntity<>(customerRepo.findCustomers_Name(), HttpStatus.OK);
+	}
 
 	@PostMapping("/form")
-	public ResponseEntity<Customer> createCustomer(@RequestBody CustomerRequest newCus) {
+	public ResponseEntity<?> createCustomer(@RequestBody CustomerRequest newCus) {
+		
+		if(customerRepo.existsBySystemName(newCus.getSystemName())) {
+			return new ResponseEntity<>("Error: System name is already taken!",HttpStatus.BAD_REQUEST);
+		}
+		if(customerRepo.existsByPhoneNo(newCus.getPhoneNo())) {
+			return new ResponseEntity<>("Error: Phone number is already taken!",HttpStatus.BAD_REQUEST);
+		}
+		if(customerRepo.existsByEmail(newCus.getEmail())) {
+			return new ResponseEntity<>("Error: Email is already taken!",HttpStatus.BAD_REQUEST);
+		}
 		Customer cus = new Customer();
 		cus.setName(newCus.getName());
 		cus.setSystemName(newCus.getSystemName());
@@ -54,13 +67,24 @@ public class CustomerController {
 		cus.setNote(newCus.getNote());
 		cus.setStatus(newCus.getStatus());
 
-
-		return new ResponseEntity<>(customerRepo.save(cus), HttpStatus.CREATED);
+		return new ResponseEntity<>(customerRepo.save(cus), HttpStatus.OK);
 	}
-	
+
 	@PutMapping("/form/{id}")
-	public ResponseEntity<Customer> updateCustomer(@PathVariable("id") long id,@RequestBody CustomerRequest upCustomer) {
+	public ResponseEntity<?> updateCustomer(@PathVariable("id") long id,
+			@RequestBody CustomerRequest upCustomer) {
 		Customer cus = customerRepo.findCustomerById(id);
+
+		if(!cus.getSystemName().equals(upCustomer.getSystemName()) &&customerRepo.existsBySystemName(upCustomer.getSystemName())) {
+			return new ResponseEntity<>("Error: System name is already taken!",HttpStatus.BAD_REQUEST);
+		}
+		if(!cus.getPhoneNo().equals(upCustomer.getPhoneNo()) &&customerRepo.existsByPhoneNo(upCustomer.getPhoneNo())) {
+			return new ResponseEntity<>("Error: Phone number is already taken!",HttpStatus.BAD_REQUEST);
+		}
+		if(!cus.getEmail().equals(upCustomer.getEmail()) &&customerRepo.existsByEmail(upCustomer.getEmail())) {
+			return new ResponseEntity<>("Error: Email is already taken!",HttpStatus.BAD_REQUEST);
+		}
+		
 		cus.setName(upCustomer.getName());
 		cus.setSystemName(upCustomer.getSystemName());
 		cus.setEmail(upCustomer.getEmail());
@@ -69,21 +93,47 @@ public class CustomerController {
 		cus.setGender(upCustomer.getGender());
 		cus.setNote(upCustomer.getNote());
 		cus.setStatus(upCustomer.getStatus());
-		return new ResponseEntity<>(customerRepo.save(cus), HttpStatus.CREATED);
+		return new ResponseEntity<>(customerRepo.save(cus), HttpStatus.OK);
 	}
 
-	@GetMapping("/search")
-	public ResponseEntity<List<Customer>> searchCustomer(@RequestParam("id") long id, @RequestParam("name") String name,Pageable pageable) {
- 
-		List<Customer> searchData = customerRepo.listAll(id, name);
-		return ResponseEntity.ok(searchData);
+	@GetMapping("/{id}")
+	public ResponseEntity<Customer> getCustomer(@PathVariable("id") long id) {
+
+		Optional<Customer> searchData = customerRepo.findById(id);
+		if (searchData.isPresent()) {
+			return new ResponseEntity<>(searchData.get(), HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	@GetMapping("/")
+	public ResponseEntity<List<Customer>> searchCustomer(@RequestParam(value = "name", required = false) String name,
+														@RequestParam(value = "systemName",required = false) String systemname,
+														@RequestParam(value = "email", required = false) String email,
+														@RequestParam(value = "phoneNo", required = false) String phoneNo,
+														@RequestParam(value = "partner", required = false) String partner,
+														@RequestParam(value = "gender", required = false) String gender,
+														@RequestParam(value = "note", required = false) String note,
+														@RequestParam(value = "status", required = false) String status){
+
+		List<Customer> cus = customerRepo.searchCustomers(name, systemname, email, phoneNo, partner,gender, note, status);
+
+			
+	    return new ResponseEntity<>(cus,HttpStatus.OK);
 	}
 	
+	@GetMapping("/search")
+	public ResponseEntity<List<Customer>> searchCustomerWithSearchBar(@RequestParam("search") String query){
+		List<Customer> cus = customerRepo.searchCustomersWithSearchBar(query);
+		return new ResponseEntity<>(cus,HttpStatus.OK);
+	}
+
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<?> deleteCustomer(@PathVariable(name = "id") Long id) { 
+	public ResponseEntity<?> deleteCustomer(@PathVariable("id") Long id) {
 		customerRepo.deleteById(id);
-		
-		return new ResponseEntity< >("Successfully", HttpStatus.OK);
+
+		return new ResponseEntity<>("Successfully", HttpStatus.OK);
 	}
 
 }

@@ -33,33 +33,33 @@ public class Employee {
 	@Column(name = "ID", nullable = false)
 	private Long id;
 
-	@Column(name = "TEN_TAI_KHOAN", nullable = true)
+	@Column(name = "TEN_TAI_KHOAN", nullable = false)
 	private String username;
 
-	@Column(name = "MAT_KHAU", nullable = true)
+	@Column(name = "MAT_KHAU", nullable = false)
 	@JsonIgnore
 	private String password;
 
-	@Column(name = "HO_TEN", nullable = true)
+	@Column(name = "HO_TEN", nullable = false)
 	private String name;
 
-	@Column(name = "EMAIL", nullable = true)
+	@Column(name = "EMAIL", nullable = false)
 	private String email;
 
-	@Column(name = "DIEN_THOAI", nullable = true)
+	@Column(name = "DIEN_THOAI", nullable = false)
 	private String phoneNo;
 
-	@Column(name = "GIOI_TINH", nullable = true)
+	@Column(name = "GIOI_TINH", nullable = false)
 	private Gender gender;
 
 	public enum Gender {
-		Female, Male, OTHER;
+		Female, Male, Other;
 	}
 
-	@Column(name = "PHONG_BAN", nullable = true)
+	@Column(name = "PHONG_BAN", nullable = false)
 	private String department;
 
-	@Column(name = "TRANG_THAI", nullable = true)
+	@Column(name = "TRANG_THAI", nullable = false)
 	private Status status;
 
 	public enum Status {
@@ -72,16 +72,28 @@ public class Employee {
 		inverseJoinColumns = @JoinColumn(name = "CHUC_VU_ID", referencedColumnName = "id"))
 	private Set<Role> role = new HashSet<>();
 	
-	@OneToMany(cascade = CascadeType.ALL,mappedBy = "emp")
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy="emp")
+	@JsonIgnore
+    private List<Module> mods;
+	
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "emp",orphanRemoval=true)
 	@JsonBackReference
 	private List<Project> project;
 	
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "emp_workitem_1")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "emp_workitem_1",orphanRemoval=true)
 	@JsonBackReference
 	private Set<WorkItem> wi1;
 	
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "emp_workitem_2")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "emp_workitem_2",orphanRemoval=true)
 	@JsonBackReference
 	private Set<WorkItem> wi2;
+	
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "emp_workdo_3",orphanRemoval=true)
+	@JsonBackReference
+	private Set<WorkDo> wd3;
+	
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "emp_workdo_4",orphanRemoval=true)
+	@JsonBackReference
+	private Set<WorkDo> wd4;
 	
 }

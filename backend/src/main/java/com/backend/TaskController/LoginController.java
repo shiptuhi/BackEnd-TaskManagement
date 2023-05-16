@@ -3,9 +3,10 @@ package com.backend.TaskController;
 import com.backend.TaskModel.Employee;
 import com.backend.TaskModel.Role;
 import com.backend.TaskRepo.EmployeeRepo;
+import com.backend.TaskRepo.RoleRepo;
 import com.backend.TaskAuthentication.JwtAuthenticationResponse;
-import com.backend.TaskAuthentication.MessageResponse;
 import com.backend.TaskSecurity.JwtTokenProvider;
+import com.backend.TaskAuthentication.SignupRequest;
 //import com.backend.TaskService.LoginService;
 
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class LoginController {
 
 	private final EmployeeRepo employeeRepo;
+	private final RoleRepo roleRepo;
 //	private final LoginService loginService;
 	private final AuthenticationManager authenticationManager;
 	private final JwtTokenProvider jwtTokenProvider;
@@ -52,46 +54,68 @@ public class LoginController {
 		String jwt = jwtTokenProvider.generateJwtToken(userPrincipal);
 
 		Employee emp = employeeRepo.find(signinRequest.getUsername());
-//		emp.getName();
-//		emp.getEmail();
-//		emp.getPhoneNo();
+
 		return ResponseEntity.ok(new JwtAuthenticationResponse(jwt, emp));
 
 	}
 
 	@PostMapping("/signup")
-	public ResponseEntity<?> signup(@Valid @RequestBody Employee newEmp) {
+	public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest newEmp) {
 
-//		if (employeeRepo.existsByUsername(emp.getUsername())) {
-//			return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken!"));
-//		}
-//
-//		if (employeeRepo.existsByEmail(signUpRequest.getEmail())) {
-//			return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
-//		}
-
+		if (employeeRepo.existsByUsername(newEmp.getUsername())) {
+			return new ResponseEntity<>("Error: Username is already taken!", HttpStatus.BAD_REQUEST);
+		}
+		if(employeeRepo.existsByPhoneNo(newEmp.getPhoneNo())) {
+			return new ResponseEntity<>("Error: Phone number is already taken!",HttpStatus.BAD_REQUEST);
+		}
+		if(employeeRepo.existsByEmail(newEmp.getEmail())) {
+			return new ResponseEntity<>("Error: Email is already taken!",HttpStatus.BAD_REQUEST);
+		}
 		// Create new user's account
 		Employee emp = new Employee();
 		emp.setUsername(newEmp.getUsername());
 		
 //		encoder.encode(signUpRequest.getPassword()));
-		
+		emp.setPassword(newEmp.getNew_password());
 		emp.setName(newEmp.getName());
 		emp.setEmail(newEmp.getEmail());
 		emp.setPhoneNo(newEmp.getPhoneNo());
 		emp.setGender(newEmp.getGender());
 		emp.setDepartment(newEmp.getDepartment());
 		emp.setStatus(newEmp.getStatus());
-		Set<Role> strRoles = newEmp.getRole();
+		Set<String> strRoles = newEmp.getRole();
 		Set<Role> roles = new HashSet<>();
-//		if (strRoles == null) {
-//		      Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-//		          .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-//		      roles.add(userRole);
-//		emp.setRole(strRoles);
-//		employeeRepo.save(emp);
+		if (strRoles == null) {
+		      return ResponseEntity.ok(new RuntimeException("Error: Role is not found."));
+		} else {
+			strRoles.forEach(role -> {
+				switch (role) {
+				case "admin" :
+					Role adminRole = roleRepo.findByName("Admin").orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+			        roles.add(adminRole);
+			        break;
+				case "Team Leader" :
+					Role teamleaderRole = roleRepo.findByName("Team Leader").orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+			        roles.add(teamleaderRole);
+			        break;
+				case "Tester" :
+					Role testerRole = roleRepo.findByName("Tester").orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+			        roles.add(testerRole);
+			        break;
+				case "FrontEnd" :
+					Role frontendRole = roleRepo.findByName("FrontEnd").orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+			        roles.add(frontendRole);
+			        break;
+				case "BackEnd" :
+					Role backendRole = roleRepo.findByName("BackEnd").orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+			        roles.add(backendRole);
+			        break;
+				}
+			});
+	       }
+		emp.setRole(roles);
 
-		return ResponseEntity.ok(new MessageResponse("Đăng ký thành công"));
+		return new ResponseEntity<>(employeeRepo.save(emp),HttpStatus.OK);
 
 	}
 	
@@ -103,7 +127,7 @@ public class LoginController {
 		UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 	    Long userId = userPrincipal.getId();
 //	    refreshTokenService.deleteByUserId(userId);
-	    return ResponseEntity.ok(new MessageResponse("Log out successful!"));
+	    return new ResponseEntity<>("Log out successful!", HttpStatus.OK);
 	  }
 
 }

@@ -23,12 +23,12 @@ public class JwtTokenProvider {
 	@Value("${app.jwtExpirationInMs}")
 	private int jwtExpirationInMs;
 
-	public String generateJwtToken(UserPrincipal userPrincipal) {
-		return generateTokenFromUsername(userPrincipal.getUsername());
-	}
+//	public String generateJwtToken(UserPrincipal userPrincipal) {
+//		return generateTokenFromUsername(userPrincipal.getUsername());
+//	}
 
-	public String generateTokenFromUsername(String username) {
-		return Jwts.builder().setSubject(username).setIssuedAt(new Date())
+	public String generateJwtToken(UserPrincipal userPrincipal) {
+		return Jwts.builder().setSubject(userPrincipal.getUsername()).claim("role", userPrincipal.getRoles()).setIssuedAt(new Date())
 				.setExpiration(new Date((new Date()).getTime() + jwtExpirationInMs))
 				.signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
 	}

@@ -6,22 +6,25 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Data;
 
+import com.backend.TaskModel.WorkItem.WorkPriority;
+import com.backend.TaskModel.WorkItem.WorkStatus;;
+
 @Data
 public class WorkItemRequest {
 	
 	private String code;
 	private String name;
-	private long moduleid;
-	private long projectid;
-	private long priorityid;
-	private long emp1id;
-	private long emp2id;
-	@JsonFormat(pattern = "dd/MM/yyyy")
+	private String module;
+	private String project;
+	private WorkPriority priority;
+	private String emp1;
+	private String emp2;
+	@JsonFormat(pattern = "dd-MM-yyyy")
 	private Date dateStart;
-	@JsonFormat(pattern = "dd/MM/yyyy")
+	@JsonFormat(pattern = "dd-MM-yyyy")
 	private Date dateEnd;
 	private String content;
-	private long status;
+	private WorkStatus status;
 	
 
 }

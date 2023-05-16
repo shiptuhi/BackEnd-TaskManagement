@@ -6,7 +6,6 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -45,11 +44,11 @@ public class Project {
 		Inactive, Active;
 	}
 
-	@JsonFormat(pattern = "dd/MM/yyyy")
+	@JsonFormat(pattern = "dd-MM-yyyy")
 	@Column(name = "NGAY_BAT_DAU", nullable = true)
 	private Date dateStart;
 
-	@JsonFormat(pattern = "dd/MM/yyyy")
+	@JsonFormat(pattern = "dd-MM-yyyy")
 	@Column(name = "NGAY_KET_THUC", nullable = true)
 	private Date dateEnd;
 	
@@ -69,16 +68,16 @@ public class Project {
 	@Column(name = "GHI_CHU", nullable = true)
 	private String note;
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "project")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "project",orphanRemoval=true)
 	@JsonBackReference
 	private Set<Module> module;
 	
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "project_workitem")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "project_workitem",orphanRemoval=true)
 	@JsonBackReference
 	private Set<WorkItem> workitem;
 	
-//	@OneToMany(mappedBy = "project_workdo")
-//	@JsonBackReference
-//	private Set<WorkDo> workdo;
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "project_workdo",orphanRemoval=true)
+	@JsonBackReference
+	private Set<WorkDo> workdo;
 
 }

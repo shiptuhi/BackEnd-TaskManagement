@@ -20,7 +20,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import org.springframework.format.annotation.DateTimeFormat;
+import org.hibernate.annotations.GenericGenerator;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.Data;
-
+import org.hibernate.annotations.Parameter;
 @Entity
 @Table(name = "MODULE")
 @Data
@@ -56,19 +56,21 @@ public class Module {
 		inverseJoinColumns = @JoinColumn(name = "NHAN_VIEN_ID", referencedColumnName = "id"))
 	private List<Employee> emp;
 	
-	@JsonFormat(pattern = "dd/MM/yyyy")
+	@JsonFormat(pattern="dd-MM-yyyy")
+//	@DateTimeFormat(pattern= "dd-MM-yyyy")
+	@Temporal(TemporalType.DATE)
 	@Column(name = "NGAY_BAT_DAU", nullable = true)
 	private Date dateStart;
 
 	@Column(name = "GHI_CHU", nullable = false)
 	private String note;
 	
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "module_workitem")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "module_workitem",orphanRemoval=true)
 	@JsonBackReference
 	private Set<WorkItem> workitem;
 	
-//	@OneToMany(mappedBy = "module_workdo")
-//	@JsonBackReference
-//	private Set<WorkDo> workdo;
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "module_workdo",orphanRemoval=true)
+	@JsonBackReference
+	private Set<WorkDo> workdo;
 
 }

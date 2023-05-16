@@ -1,9 +1,9 @@
 package com.backend.TaskController;
 
-import java.util.HashSet;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.TaskModel.Customer;
@@ -46,44 +47,57 @@ public class ProjectController {
 		return new ResponseEntity<>(projectRepo.findProjects(), HttpStatus.OK);
 	}
 	
+	@GetMapping("/list/name")
+	public ResponseEntity<List<String>> getProject_Name() {
+		return new ResponseEntity<>(projectRepo.listProjectName(), HttpStatus.OK);
+	}
+	
 	@PostMapping(path="/form", consumes = { "application/json" })
-	public ResponseEntity<Project> createProject(@RequestBody ProjectRequest newPro) {
+	public ResponseEntity<?> createProject(@RequestBody ProjectRequest newPro) {
 		Project prj = new Project();
+		if(projectRepo.existsByCode(newPro.getCode())) {
+			return new ResponseEntity<>("Error: Code is already taken!",HttpStatus.BAD_REQUEST); 
+		}
+		
 		prj.setCode(newPro.getCode());
 		prj.setName(newPro.getName());
 		prj.setStatus(newPro.getStatus());
 		prj.setDateStart(newPro.getDateStart());
 		prj.setDateEnd(newPro.getDateEnd());
 		 
-		Employee emp1 = employeeRepo.findEId(newPro.getEmpid());
+		Employee emp1 = employeeRepo.findE(newPro.getEmp());
 		prj.setEmp(emp1);
 		
-		Customer cus1 = customerRepo.findCustomerById(newPro.getCustomerid());
+		Customer cus1 = customerRepo.findCustomer(newPro.getCustomer());
 		prj.setCustomer(cus1);
 		
 		prj.setNote(newPro.getNote());
 		
-		return new ResponseEntity<>(projectRepo.save(prj), HttpStatus.CREATED);
+		return new ResponseEntity<>(projectRepo.save(prj), HttpStatus.OK);
 	}
 	@PutMapping("/form/{id}")
-	public ResponseEntity<Project> updateProject(@PathVariable("id") long id,@RequestBody ProjectRequest upPro) {
+	public ResponseEntity<?> updateProject(@PathVariable("id") long id,@RequestBody ProjectRequest upPro) {
+
 		Project prj = projectRepo.findProjectById(id);
+		if(!prj.getCode().equals(upPro.getCode()) && projectRepo.existsByCode(upPro.getCode())) {
+			return new ResponseEntity<>("Error: Code is already taken!",HttpStatus.BAD_REQUEST); 
+		}
 		prj.setCode(upPro.getCode());
 		prj.setName(upPro.getName());
 		prj.setStatus(upPro.getStatus());
 		prj.setDateStart(upPro.getDateStart());
 		prj.setDateEnd(upPro.getDateEnd());
-		Employee emp1 = employeeRepo.findEId(upPro.getEmpid());
+		Employee emp1 = employeeRepo.findE(upPro.getEmp());
 		prj.setEmp(emp1);
 		
-		Customer cus1 = customerRepo.findCustomerById(upPro.getCustomerid());
+		Customer cus1 = customerRepo.findCustomer(upPro.getCustomer());
 		prj.setCustomer(cus1);
 		prj.setNote(upPro.getNote());
 		
-		return new ResponseEntity<>(projectRepo.save(prj), HttpStatus.CREATED);
+		return new ResponseEntity<>(projectRepo.save(prj), HttpStatus.OK);
 	}
 	@GetMapping("/search/{id}")
-	public ResponseEntity<Project> searchProject(@PathVariable("id") long id) {
+	public ResponseEntity<Project> getProject(@PathVariable("id") long id) {
 		
 		Optional<Project> searchData = projectRepo.findById(id);
 		if (searchData.isPresent()) {
@@ -93,11 +107,35 @@ public class ProjectController {
 		}
 	}
 	
+	@GetMapping("/")
+	public ResponseEntity<List<Project>> searchProject (@RequestParam(value = "code", required = false) String code, 
+														@RequestParam(value = "name", required = false) String name,
+														@RequestParam(value = "status", required = false) String status, 
+//														@RequestParam(value = "dateStart", required = false) String dateStart,
+//														@RequestParam(value = "dateEnd", required = false) String dateEnd, 
+//														@RequestParam(value = "emp", required = false) Long emp,
+														@RequestParam(value = "partner", required = false) String partner, 
+														@RequestParam(value = "note", required = false) String note)throws ParseException 
+	{
+//		 	Date d1 = new SimpleDateFormat("dd-MM-yyyy").parse(dateStart);
+//	        Date d2 = new SimpleDateFormat("dd-MM-yyyy").parse(dateEnd);
+	        
+	
+		List<Project> prj = projectRepo.searchProjects(code, name, status, partner, note);
+		return new ResponseEntity<>(prj,HttpStatus.OK);
+	}
+	
+	@GetMapping("/search")
+	public ResponseEntity<List<Project>> searchProjectsWithSearchBar(@RequestParam("search") String query){
+		List<Project> prj = projectRepo.searchProjectsWithSearchBar(query);
+		return new ResponseEntity<>(prj,HttpStatus.OK);
+	}
+	
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<?> deleteProject(@PathVariable(name = "id") Long id) { 
 		projectRepo.deleteById(id);
 		
-		return new ResponseEntity< >("Successfully", HttpStatus.OK);
+		return new ResponseEntity<>("Successfully", HttpStatus.OK);
 	}
 
 }

@@ -21,8 +21,7 @@ public class Role {
 	@Column(name = "ID", nullable = false)
 	private Long id;
 
-//	@NaturalId
 	@Column(name = "TEN_CHUC_VU", nullable = false)
-	private String role_name;
+	private String name;
 
 }

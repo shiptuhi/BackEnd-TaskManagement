@@ -1,8 +1,5 @@
 package com.backend.TaskAuthentication;
 
-import java.util.Date;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.backend.TaskModel.Customer.Status;
 import com.backend.TaskModel.Customer.Gender;
 import lombok.Data;
